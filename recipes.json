@@ -1,0 +1,74 @@
+[
+  {
+    "id": "1",
+    "name": "Crispy Chicken & Cheesy Potatoes",
+    "url": "",
+    "ingredients": [
+      "2 chicken breasts",
+      "1 cup flour",
+      "1 tsp paprika",
+      "1 tsp garlic powder",
+      "1 bag frozen potatoes",
+      "1 cup mexican cheese"
+    ],
+    "instructions": "1. Coat chicken in flour/spices. Pan fry until golden.\n2. Roast potatoes at 400F for 20 mins.\n3. Top potatoes with cheese until melted."
+  },
+  {
+    "id": "2",
+    "name": "Southwest Breakfast Tacos",
+    "url": "",
+    "ingredients": [
+      "6 eggs",
+      "1/2 cup salsa",
+      "1/2 cup mexican cheese",
+      "2 sweet potatoes",
+      "4 tortillas"
+    ],
+    "instructions": "1. Roast diced sweet potatoes.\n2. Scramble eggs with salsa.\n3. Serve in tortillas with cheese."
+  },
+  {
+    "id": "3",
+    "name": "Cheater's Chili Mac",
+    "url": "",
+    "ingredients": [
+      "1 box mac and cheese",
+      "1 can kidney beans",
+      "1/2 cup salsa",
+      "1 tsp cumin",
+      "1 tsp paprika"
+    ],
+    "instructions": "1. Cook mac and cheese per box.\n2. Stir in drained beans, salsa, and spices.\n3. Heat through."
+  },
+  {
+    "id": "1771193355154",
+    "name": "Chicken Enchiladas",
+    "url": "https://www.gimmesomeoven.com/best-chicken-enchiladas-ever/",
+    "ingredients": [
+      "2 tablespoons avocado oil (or olive oil)",
+      "1 small white onion, peeled and diced",
+      "1 1/2 pounds boneless skinless chicken breasts, diced into small 1/2-inch pieces",
+      "1 (4-ounce) can diced green chiles",
+      "sea salt and freshly-cracked black pepper",
+      "1 (15-ounce) can black beans, rinsed and drained",
+      "8 large flour tortillas",
+      "3 cups Mexican-blend shredded cheese",
+      "1 batch red enchilada sauce",
+      "optional toppings: fresh cilantro, chopped red onions, diced avocado, sour cream, and/or crumbled cotija cheese"
+    ],
+    "instructions": "Preheat oven to 350°F.  Prepare your enchilada sauce.\nIn large sauté pan, heat oil over medium-high heat. Add onion and sauté for 3 minutes, stirring occasionally.  Add diced chicken and green chiles, and season with a generous pinch of salt and pepper.  Sauté the mixture for 6-8 minutes, stirring occasionally, or until the chicken is cooked through.  Add in the beans and stir until evenly combined.  Remove pan from heat and set aside.\nTo assemble the enchiladas, set up an assembly line including: tortillas, enchilada sauce, chicken mixture, and cheese. Lay out a tortilla, and spread two tablespoons of sauce over the surface of the tortilla.  Add a generous spoonful of the chicken mixture in a line down the center of the tortilla, then sprinkle with 1/3 cup cheese. Roll up tortilla and place in a greased 9 x 13-inch baking dish. Assemble the remaining enchiladas.  Then spread any remaining sauce evenly over the top of the enchiladas, followed by any extra cheese.\nBake uncovered for 20 minutes, until the enchiladas are cooked through and the tortillas are slightly crispy on the outside.  Transfer the baking dish to a wire baking rack.\nServe the enchiladas immediately while they&#8217;re nice and hot and melty, garnished with lots of fresh toppings. Enjoy!"
+  },
+  {
+    "id": "1771193393490",
+    "name": "Easy Weeknight Spaghetti",
+    "url": "https://www.inspiredtaste.net/38940/spaghetti-with-meat-sauce-recipe/",
+    "ingredients": [],
+    "instructions": "Could not auto-extract instructions. Please fill manually."
+  },
+  {
+    "id": "1771199607138",
+    "name": "Grilled cheese",
+    "url": "",
+    "ingredients": [],
+    "instructions": ""
+  }
+]

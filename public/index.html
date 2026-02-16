@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pantry & Plan 🥘</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 1rem; background: #f9f9f9; }
+        h1, h2 { text-align: center; color: #333; }
+        
+        nav { display: flex; justify-content: center; gap: 1rem; margin-bottom: 2rem; background: #fff; padding: 0.5rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        nav button { background: none; border: none; font-size: 1.1rem; padding: 0.5rem 1rem; cursor: pointer; color: #666; font-weight: bold; border-bottom: 3px solid transparent; }
+        nav button.active { color: #4CAF50; border-bottom-color: #4CAF50; }
+        
+        section { display: none; }
+        section.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        ul { list-style: none; padding: 0; }
+        li { background: white; padding: 1rem; margin-bottom: 0.5rem; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        
+        .form-row { display: flex; gap: 0.5rem; margin-bottom: 1rem; }
+        input, select { padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; flex: 1; }
+        button.primary { background: #4CAF50; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
+        button.danger { background: #ff4d4d; color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        
+        .calendar { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
+        .day-card { background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); min-height: 100px; display: flex; flex-direction: column; }
+        .day-name { font-weight: bold; margin-bottom: 0.5rem; color: #555; text-transform: uppercase; font-size: 0.9rem; }
+        .meal-slot { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; border: 2px dashed #eee; border-radius: 4px; padding: 0.5rem; cursor: pointer; transition: background 0.2s; }
+        .meal-slot:hover { background: #f0f0f0; border-color: #ddd; }
+        .meal-slot.filled { background: #e8f5e9; border: 2px solid #4CAF50; color: #2e7d32; font-weight: bold; }
+        
+        /* Recipe Details */
+        .recipe-url-box { margin-bottom: 1.5rem; padding: 1rem; background: #e8f5e9; border-radius: 8px; display: flex; gap: 0.5rem; align-items: center; }
+        .recipe-details { font-size: 0.9rem; color: #666; margin-top: 0.5rem; max-height: 100px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: white; padding: 2rem; border-radius: 8px; max-width: 400px; width: 90%; }
+        .recipe-list-modal { max-height: 300px; overflow-y: auto; }
+        .recipe-option { padding: 0.5rem; border-bottom: 1px solid #eee; cursor: pointer; }
+        .recipe-option:hover { background: #f9f9f9; }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <button onclick="switchTab('pantry')" class="active">Pantry</button>
+        <button onclick="switchTab('recipes')">Recipes</button>
+        <button onclick="switchTab('plan')">Weekly Plan</button>
+        <button onclick="switchTab('shopping')">Shopping List 🛒</button>
+    </nav>
+
+    <!-- PANTRY SECTION -->
+    <section id="pantry" class="active">
+        <h2>Your Kitchen Stock 🥚</h2>
+        <div class="form-row">
+            <input type="text" id="pantry-name" placeholder="Item Name">
+            <input type="number" id="pantry-qty" placeholder="Qty" value="1" style="flex: 0.3;">
+            <input type="text" id="pantry-unit" placeholder="Unit" value="pcs" style="flex: 0.3;">
+            <button class="primary" onclick="addPantryItem()">Add</button>
+        </div>
+        <ul id="pantry-list"></ul>
+    </section>
+
+    <!-- RECIPES SECTION -->
+    <section id="recipes">
+        <h2>Meal Ideas 📖</h2>
+        
+        <!-- SEARCH & FETCH -->
+        <div class="recipe-url-box">
+            <input type="text" id="recipe-search" placeholder="Search for a recipe (e.g., Chicken Tikka)...">
+            <button class="primary" onclick="searchRecipes()">Search 🔍</button>
+        </div>
+        <div id="search-results" style="margin-bottom:1rem;"></div>
+
+        <div class="form-row">
+            <input type="text" id="recipe-name" placeholder="Or add manually: Recipe Name">
+            <button class="primary" onclick="addRecipeManual()">Save</button>
+        </div>
+        <ul id="recipe-list"></ul>
+    </section>
+
+    <!-- PLAN SECTION -->
+    <section id="plan">
+        <h2>This Week's Menu 📅</h2>
+        <div class="calendar" id="calendar-grid"></div>
+    </section>
+
+    <!-- SHOPPING SECTION -->
+    <section id="shopping">
+        <h2>Shopping List 🛒</h2>
+        <p style="text-align:center; color:#666;">Check items to act on them.</p>
+        <div style="text-align:center; margin-bottom:1rem; display:flex; justify-content:center; gap:0.5rem;">
+            <button class="primary" onclick="markBought()">Bought (+Pantry) 🛍️</button>
+            <button class="danger" onclick="clearCheckedItems()">Have It (Clear) ❌</button>
+        </div>
+        <button onclick="fetchShoppingList()" style="display:block; margin:0.5rem auto; background:none; border:1px solid #ccc; padding:0.3rem 0.6rem; border-radius:4px; cursor:pointer;">Refresh List 🔄</button>
+        <ul id="shopping-list-items"></ul>
+    </section>
+
+    <!-- MODAL -->
+    <div id="modal" class="modal" onclick="closeModal(event)">
+        <div class="modal-content">
+            <h3>Select a Meal</h3>
+            <input type="text" id="meal-search" placeholder="Filter recipes..." onkeyup="filterMeals()" style="width:100%; margin-bottom:1rem; padding:0.5rem;">
+            <div id="modal-list" class="recipe-list-modal"></div>
+            <button class="danger" style="margin-top: 1rem; width: 100%;" onclick="closeModal(true)">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let pantry = [];
+        let recipes = [];
+        let plan = {};
+        let selectedDate = null;
+
+        async function init() {
+            await Promise.all([fetchPantry(), fetchRecipes(), fetchPlan()]);
+            renderCalendar();
+        }
+
+        async function fetchPantry() {
+            const res = await fetch('/api/pantry');
+            pantry = await res.json();
+            renderPantry();
+        }
+        
+        async function fetchRecipes() {
+            const res = await fetch('/api/recipes');
+            recipes = await res.json();
+            renderRecipes();
+        }
+        
+        async function fetchPlan() {
+            const res = await fetch('/api/plan');
+            plan = await res.json();
+        }
+
+        // --- PANTRY ---
+        function renderPantry() {
+            const list = document.getElementById('pantry-list');
+            list.innerHTML = pantry.map(i => `
+                <li>
+                    <span>${i.name} (${i.quantity} ${i.unit})</span>
+                    <div>
+                        <button onclick="updatePantry('${i.name}', 1)">+</button>
+                        <button onclick="updatePantry('${i.name}', -1)">-</button>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        async function addPantryItem() {
+            const name = document.getElementById('pantry-name').value;
+            const qty = document.getElementById('pantry-qty').value;
+            const unit = document.getElementById('pantry-unit').value;
+            if(!name) return;
+            await fetch('/api/pantry', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name, quantity: qty, unit })
+            });
+            document.getElementById('pantry-name').value = '';
+            fetchPantry();
+        }
+
+        async function updatePantry(name, change) {
+            await fetch('/api/pantry', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name, quantity: change })
+            });
+            fetchPantry();
+        }
+
+        // --- RECIPES ---
+        function renderRecipes() {
+            const list = document.getElementById('recipe-list');
+            list.innerHTML = recipes.map(r => `
+                <li>
+                    <div style="flex:1;">
+                        <span style="font-weight:bold;">${r.name}</span>
+                        ${r.url ? `<a href="${r.url}" target="_blank" style="font-size:0.8rem; margin-left:0.5rem; color:#4CAF50;">(Link 🔗)</a>` : ''}
+                        <div class="recipe-details">
+                           ${r.ingredients && r.ingredients.length ? r.ingredients.slice(0, 3).join(', ') + '...' : ''}
+                        </div>
+                    </div>
+                    <button class="danger" onclick="deleteRecipe('${r.id}')">Delete</button>
+                </li>
+            `).join('');
+        }
+
+        async function searchRecipes() {
+            const query = document.getElementById('recipe-search').value;
+            if(!query) return alert('Enter a search term!');
+            
+            const resultsDiv = document.getElementById('search-results');
+            resultsDiv.innerHTML = '<div style="text-align:center;">Searching... ⏳</div>';
+            
+            try {
+                const res = await fetch('/api/search-recipes', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ query })
+                });
+                const data = await res.json();
+                
+                if(data.results && data.results.length) {
+                    resultsDiv.innerHTML = data.results.map(r => `
+                        <div style="background:white; padding:1rem; margin-bottom:0.5rem; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,0.1); cursor:pointer;" onclick="fetchAndSave('${r.url}')">
+                            <div style="font-weight:bold; color:#333;">${r.title}</div>
+                            <div style="font-size:0.8rem; color:#666;">${r.description.substring(0, 100)}...</div>
+                            <div style="font-size:0.8rem; color:#4CAF50; margin-top:0.2rem;">Click to Import 📥</div>
+                        </div>
+                    `).join('');
+                } else {
+                    resultsDiv.innerHTML = '<div style="text-align:center;">No results found. 😿</div>';
+                }
+            } catch(e) {
+                resultsDiv.innerHTML = `<div style="color:red;">Error: ${e.message}</div>`;
+            }
+        }
+
+        async function fetchAndSave(url) {
+            if(!confirm("Import this recipe?")) return;
+            
+            // Re-use fetchRecipe logic but automated
+            const originalBtn = document.querySelector('button[onclick="searchRecipes()"]');
+            originalBtn.textContent = 'Importing... ⏳';
+            originalBtn.disabled = true;
+            
+            try {
+                const res = await fetch('/api/fetch-recipe', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ url })
+                });
+                const data = await res.json();
+                
+                if(data.success) {
+                    await fetch('/api/recipes', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ 
+                            name: data.name, 
+                            url: data.url, 
+                            ingredients: data.ingredients, 
+                            instructions: data.instructions 
+                        })
+                    });
+                    document.getElementById('search-results').innerHTML = ''; // Clear search
+                    document.getElementById('recipe-search').value = '';
+                    fetchRecipes(); // Refresh list
+                    alert(`Imported: ${data.name}`);
+                } else {
+                    alert('Could not parse recipe details automatically. Maybe try manual add?');
+                }
+            } catch(e) {
+                alert('Import failed: ' + e.message);
+            }
+            originalBtn.textContent = 'Search 🔍';
+            originalBtn.disabled = false;
+        }
+
+        async function fetchRecipe() {
+            const url = document.getElementById('recipe-url').value;
+            if(!url) return alert('Enter a URL!');
+            
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.textContent = '⏳ Fetching...';
+            btn.disabled = true;
+            
+            try {
+                const res = await fetch('/api/fetch-recipe', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ url })
+                });
+                
+                const data = await res.json();
+                
+                if(data.success) {
+                    // Save directly
+                    await fetch('/api/recipes', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ 
+                            name: data.name, 
+                            url: data.url, 
+                            ingredients: data.ingredients, 
+                            instructions: data.instructions 
+                        })
+                    });
+                    document.getElementById('recipe-url').value = '';
+                    fetchRecipes();
+                    alert(`Saved: ${data.name}`);
+                } else {
+                    alert('Could not parse recipe. Try a different site (e.g., AllRecipes, NYT Cooking).');
+                }
+            } catch(e) {
+                alert('Fetch failed: ' + e.message);
+            }
+            btn.textContent = originalText;
+            btn.disabled = false;
+        }
+
+        async function addRecipeManual() {
+            const name = document.getElementById('recipe-name').value;
+            if(!name) return;
+            await fetch('/api/recipes', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ name })
+            });
+            document.getElementById('recipe-name').value = '';
+            fetchRecipes();
+        }
+
+        async function deleteRecipe(id) {
+            if(!confirm("Delete recipe?")) return;
+            await fetch(`/api/recipes/${id}`, { method: 'DELETE' });
+            fetchRecipes();
+        }
+
+        // --- PLAN ---
+        function renderCalendar() {
+            const grid = document.getElementById('calendar-grid');
+            grid.innerHTML = '';
+            const today = new Date();
+            for(let i=0; i<7; i++) {
+                const d = new Date(today);
+                d.setDate(today.getDate() + i);
+                const dateStr = d.toISOString().split('T')[0];
+                const dayName = d.toLocaleDateString('en-US', { weekday: 'long' });
+                
+                const recipeId = plan[dateStr];
+                const recipe = recipes.find(r => r.id === recipeId);
+                
+                const card = document.createElement('div');
+                card.className = 'day-card';
+                card.innerHTML = `
+                    <div class="day-name">${dayName} <small>${dateStr.slice(5)}</small></div>
+                    <div class="meal-slot ${recipe ? 'filled' : ''}" onclick="openMealSelector('${dateStr}')">
+                        ${recipe ? recipe.name : '+ Add Meal'}
+                    </div>
+                    ${recipe ? `<button class="danger" style="margin-top:0.5rem;" onclick="clearDay('${dateStr}')">Clear</button>` : ''}
+                `;
+                grid.appendChild(card);
+            }
+        }
+
+        function openMealSelector(date) {
+            selectedDate = date;
+            document.getElementById('modal').style.display = 'flex';
+            document.getElementById('meal-search').value = '';
+            document.getElementById('meal-search').focus();
+            renderModalList(recipes);
+        }
+
+        function filterMeals() {
+            const query = document.getElementById('meal-search').value.toLowerCase();
+            const filtered = recipes.filter(r => r.name.toLowerCase().includes(query));
+            renderModalList(filtered);
+        }
+
+        function renderModalList(list) {
+            const container = document.getElementById('modal-list');
+            if(list.length === 0) {
+                container.innerHTML = '<div style="text-align:center; padding:1rem; color:#666;">No recipes found.</div>';
+                return;
+            }
+            container.innerHTML = list.map(r => `
+                <div class="recipe-option" onclick="selectMeal('${r.id}')" style="padding:0.75rem; border-bottom:1px solid #eee; cursor:pointer;">
+                    <div style="font-weight:bold;">${r.name}</div>
+                    ${r.url ? `<small style="color:#666;">${r.url.split('/')[2]}</small>` : ''}
+                </div>
+            `).join('');
+        }
+
+        async function selectMeal(recipeId) {
+            await fetch('/api/plan', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ date: selectedDate, recipeId })
+            });
+            closeModal(true);
+            init();
+        }
+        
+        async function clearDay(date) {
+            await fetch('/api/plan', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ date, recipeId: null })
+            });
+            init();
+        }
+
+        function closeModal(force) {
+            if(force || event.target.id === 'modal') {
+                document.getElementById('modal').style.display = 'none';
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+            
+            if(tabId === 'plan') renderCalendar();
+            if(tabId === 'shopping') fetchShoppingList();
+        }
+
+        async function fetchShoppingList() {
+            const listEl = document.getElementById('shopping-list-items');
+            listEl.innerHTML = '<li style="justify-content:center;">Calculating... ⏳</li>';
+            
+            try {
+                const res = await fetch('/api/shopping-list');
+                const data = await res.json();
+                
+                listEl.innerHTML = '';
+                
+                if(!data.list || data.list.length === 0) {
+                    listEl.innerHTML = '<li style="justify-content:center;">All stocked up! 🎉</li>';
+                    return;
+                }
+                
+                data.list.forEach(item => {
+                    const li = document.createElement('li');
+                    const isChecked = item.checked || false;
+                    
+                    li.innerHTML = `
+                        <div style="flex:1;">
+                            <span style="font-weight:bold; ${isChecked ? 'text-decoration:line-through; color:#aaa;' : ''}">${item.name}</span>
+                            <div style="font-size:0.9rem; color:#666;">Need: ${item.needed}, Have: ${item.have}</div>
+                        </div>
+                        <input type="checkbox" style="width:20px; height:20px;" ${isChecked ? 'checked' : ''} onchange="toggleCheck('${item.name}', this.checked)">
+                    `;
+                    listEl.appendChild(li);
+                });
+            } catch(e) {
+                listEl.innerHTML = `<li style="color:red;">Error: ${e.message}</li>`;
+            }
+        }
+
+        async function toggleCheck(name, checked) {
+            // Optimistic UI: Don't refresh whole list, just send request
+            try {
+                await fetch('/api/shopping-list/check', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ name, checked })
+                });
+                
+                // Update visual style locally without full reload
+                const checkbox = event.target;
+                const label = checkbox.previousElementSibling.querySelector('span');
+                if(label) {
+                    if(checked) {
+                        label.style.textDecoration = 'line-through';
+                        label.style.color = '#aaa';
+                    } else {
+                        label.style.textDecoration = 'none';
+                        label.style.color = 'black';
+                    }
+                }
+            } catch(e) {
+                console.error("Failed to toggle check", e);
+            }
+        }
+        
+        async function markBought() {
+            if(!confirm("Add checked items to pantry?")) return;
+            try {
+                const res = await fetch('/api/shopping-list/buy', { method: 'POST' });
+                const data = await res.json();
+                if(data.success) {
+                    alert("Added to pantry! 🥘");
+                    fetchShoppingList();
+                }
+            } catch(e) {
+                alert("Error: " + e.message);
+            }
+        }
+        
+        async function clearCheckedItems() {
+            if(!confirm("I already have these items? (Updates pantry count to match need)")) return;
+            try {
+                const res = await fetch('/api/shopping-list/have', { method: 'POST' });
+                const data = await res.json();
+                if(data.success) {
+                    alert("Pantry updated! ✅");
+                    fetchShoppingList();
+                }
+            } catch(e) {
+                alert("Error: " + e.message);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//OpenClaw//Meal Planner//EN
+CALSCALE:GREGORIAN
+BEGIN:VEVENT
+SUMMARY:Dinner: Crispy Chicken & Cheesy Potatoes
+DTSTART;VALUE=DATE:20260215
+DTEND;VALUE=DATE:20260216
+DESCRIPTION:Pan-fried chicken breast (coated in flour + spices) served with roasted frozen potatoes topped with melted Mexican cheese.
+END:VEVENT
+BEGIN:VEVENT
+SUMMARY:Dinner: Southwest Breakfast for Dinner
+DTSTART;VALUE=DATE:20260216
+DTEND;VALUE=DATE:20260217
+DESCRIPTION:Scrambled eggs with salsa and cheese, served with roasted sweet potato cubes. (Maybe add tortillas!)
+END:VEVENT
+BEGIN:VEVENT
+SUMMARY:Dinner: Cheater's Chili Mac
+DTSTART;VALUE=DATE:20260217
+DTEND;VALUE=DATE:20260218
+DESCRIPTION:Mac and cheese mixed with kidney beans, salsa, and shredded chicken. Seasoned with cumin and paprika.
+END:VEVENT
+END:VCALENDAR
